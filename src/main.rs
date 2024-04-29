@@ -1,7 +1,6 @@
 use serde_json::to_string_pretty;
 use serde::Serialize;
 use clap::Parser;
-use lotto::Lotto;
 
 mod lotto;
 mod util;
@@ -29,13 +28,10 @@ fn main() {
     let args_json = to_string_pretty(&args).unwrap();
     println!("args: {}", args_json);
 
-    // match args.lotto {
-    //     None => {}
-    //     Some(str) => {
-    //         let lotto = Lotto::new(&str);
-    //         println!("{:?}", lotto);
-    //     }
-    // }
+    util::divide();
 
-    util::get_inputs(&args);
+    let lottos = util::get_inputs(&args);
+    for lotto in lottos {
+        println!("lotto: {:?}", lotto);
+    }
 }

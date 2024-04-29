@@ -6,3 +6,6 @@ pub use get_inputs::get_inputs;
 
 mod divide;
 pub use divide::divide;
+
+mod read_file;
+pub use read_file::read_file;
