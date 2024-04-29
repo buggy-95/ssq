@@ -1,18 +1,3 @@
-#[allow(dead_code)]
-#[derive(Debug)]
-pub struct Lotto {
-    red_arr: [u8; 6],
-    blue_arr: [u8; 1],
-    scale: u32,
-}
-
-impl Lotto {
-    pub fn new(str: &str) -> Lotto {
-        let (red_arr, blue_arr, scale) = parse_lotto(str);
-        Lotto { red_arr, blue_arr, scale }
-    }
-}
-
 pub fn parse_lotto(str: &str) -> ([u8; 6], [u8; 1], u32) {
     let mut red_arr: [u8; 6] = [0; 6];
     let mut blue_arr: [u8; 1] = [0];
@@ -52,19 +37,15 @@ pub fn parse_lotto(str: &str) -> ([u8; 6], [u8; 1], u32) {
     for char in str.chars() {
         match char {
             '0'..='9' => num_str.push(char),
-            ',' | '-' | 'x' | ' ' => append_num(&mut num_str, char),
-            _ => println!("不应出现的字符: {char}"),
+            _ => append_num(&mut num_str, char),
         }
     }
 
     append_num(&mut num_str, '\0');
 
-    print!("\n");
-
     (red_arr, blue_arr, scale)
 }
 
-#[allow(dead_code)]
 #[cfg(test)]
 mod test {
     use super::*;

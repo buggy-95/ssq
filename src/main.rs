@@ -1,5 +1,6 @@
 use clap::Parser;
-// use ssq::*;
+
+mod util;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -20,13 +21,12 @@ struct Args {
 }
 
 fn main() {
-    // let str = "01,02,03,04,05";
-    // let (red, blue, scale) = parse_lotto(str);
-    // println!("red: {:?}", red);
-    // println!("blue: {:?}", blue);
-    // println!("scale: {:?}", scale);
+    let str = "01,02,03,04,05,06-07";
+    let (red, blue, scale) = util::parse_lotto(str);
+    println!("red: {:?}", red);
+    println!("blue: {:?}", blue);
+    println!("scale: {:?}", scale);
 
     let args = Args::parse();
-
     println!("args: {:?}", args);
 }
