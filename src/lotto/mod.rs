@@ -1,11 +1,12 @@
+use serde::Serialize;
 use crate::util::parse_lotto;
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct Lotto {
-    red_arr: [u8; 6],
-    blue_arr: [u8; 1],
-    scale: u32,
+    pub red_arr: [u8; 6],
+    pub blue_arr: [u8; 1],
+    pub scale: u32,
 }
 
 #[allow(dead_code)]

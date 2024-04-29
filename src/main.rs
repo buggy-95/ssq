@@ -1,8 +1,12 @@
+use serde_json::to_string_pretty;
+use serde::Serialize;
 use clap::Parser;
+use lotto::Lotto;
 
+mod lotto;
 mod util;
 
-#[derive(Parser, Debug)]
+#[derive(Serialize, Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
     lotto: Option<String>,
@@ -21,12 +25,12 @@ struct Args {
 }
 
 fn main() {
-    let str = "01,02,03,04,05,06-07";
-    let (red, blue, scale) = util::parse_lotto(str);
-    println!("red: {:?}", red);
-    println!("blue: {:?}", blue);
-    println!("scale: {:?}", scale);
-
     let args = Args::parse();
-    println!("args: {:?}", args);
+    let args_json = to_string_pretty(&args).unwrap();
+    println!("args: {}", args_json);
+
+    let lotto = Lotto::new("01,02,03,04,05,06-07 2");
+    println!("red: {:?}", lotto.red_arr);
+    println!("blue: {:?}", lotto.blue_arr);
+    println!("scale: {}", lotto.scale);
 }
