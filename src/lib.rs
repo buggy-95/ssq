@@ -26,8 +26,9 @@ pub fn parse_lotto(str: &str) -> ([u8; 6], [u8; 1], u32) {
             Err(_) => panic!("解析错误: {str}"),
             Ok(num) => match num_index {
                 0..=5 => {
-                    if num_index < 5 && char != ',' { panic!("红球数量错误") }
+                    if char == '\0' && num_index < 6 { panic!("解析错误: {str}") }
                     if num_index == 5 && char != '-' { panic!("红球数量错误") }
+                    if num_index < 5 && char != ',' { panic!("红球数量错误") }
                     if num < 1 { panic!("红球最小为1") }
                     if num > 33 { panic!("红球最大为33") }
                     if red_record_arr[num as usize] { panic!("红球重复: {num}") }
@@ -111,38 +112,74 @@ mod test {
     }
 
     #[test]
-    #[should_panic(expected = "解析错误:")]
-    fn parse_error_6() {
-        parse_lotto("-01,02,03,04,05,06-17 2");
-    }
-
-    #[test]
-    #[should_panic(expected = "解析错误:")]
-    fn parse_error_7() {
-        parse_lotto("01,-2,03,04,05,06-17 2");
-    }
-
-    #[test]
-    #[should_panic(expected = "解析错误:")]
-    fn parse_error_8() {
-        parse_lotto("01,02,03,04,05,06-07-");
-    }
-
-    #[test]
-    #[should_panic(expected = "解析错误:")]
-    fn parse_error_9() {
-        parse_lotto("01,02,03,04,05,06-01,02");
-    }
-
-    #[test]
     #[should_panic(expected = "红球数量错误")]
-    fn parse_error_10() {
+    fn parse_error_6() {
         parse_lotto("01,02,03,04,05,06,07-08 2");
     }
 
     #[test]
     #[should_panic(expected = "红球数量错误")]
-    fn parse_error_11() {
+    fn parse_error_7() {
         parse_lotto("01,02,03,04,05-06 2");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_8() {
+        parse_lotto("-01,02,03,04,05,06-17 2");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_9() {
+        parse_lotto("01,-2,03,04,05,06-17 2");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_10() {
+        parse_lotto("01,02,03,04,05,06-07-");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_11() {
+        parse_lotto("01,02,03,04,05,06-01,02");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_12() {
+        parse_lotto("01,02,03,04,05");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_13() {
+        parse_lotto("01,02,03,04,05,");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_14() {
+        parse_lotto("01,02,03,04,05,06");
+    }
+
+    #[test]
+    #[should_panic(expected = "红球数量错误")]
+    fn parse_error_15() {
+        parse_lotto("01,02,03,04,05,06,");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_16() {
+        parse_lotto("01,02,03,04,05,06-");
+    }
+
+    #[test]
+    #[should_panic(expected = "解析错误:")]
+    fn parse_error_17() {
+        parse_lotto("01,02,abc");
     }
 }
