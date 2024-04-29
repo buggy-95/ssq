@@ -8,7 +8,7 @@ mod util;
 
 #[derive(Serialize, Parser, Debug)]
 #[command(version, about, long_about = None)]
-struct Args {
+pub struct Args {
     lotto: Option<String>,
 
     #[arg(short, long)]
@@ -29,8 +29,13 @@ fn main() {
     let args_json = to_string_pretty(&args).unwrap();
     println!("args: {}", args_json);
 
-    let lotto = Lotto::new("01,02,03,04,05,06-07 2");
-    println!("red: {:?}", lotto.red_arr);
-    println!("blue: {:?}", lotto.blue_arr);
-    println!("scale: {}", lotto.scale);
+    // match args.lotto {
+    //     None => {}
+    //     Some(str) => {
+    //         let lotto = Lotto::new(&str);
+    //         println!("{:?}", lotto);
+    //     }
+    // }
+
+    util::get_inputs(&args);
 }
