@@ -23,7 +23,8 @@ pub struct Args {
     from: Option<String>,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
     let args_json = to_string_pretty(&args).unwrap();
     println!("args: {}", args_json);
@@ -33,5 +34,12 @@ fn main() {
     let lottos = util::get_inputs(&args);
     for lotto in lottos {
         println!("lotto: {:?}", lotto);
+    }
+
+    util::divide();
+
+    match util::get_result().await {
+        Ok(_) => println!("fetch success"),
+        Err(err) => println!("fetch failed: {err}"),
     }
 }
