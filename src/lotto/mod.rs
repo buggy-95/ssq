@@ -22,8 +22,10 @@ impl Lotto {
                 formated.push('0');
             }
             formated.push_str(&red.to_string());
+            formated.push(',');
         }
 
+        formated.pop();
         formated.push('-');
 
         let blue = self.blue_arr[0];
@@ -50,4 +52,18 @@ pub struct LottoResult {
 
 impl LottoResult {
     pub fn calc(self: &Self, target: &Lotto) {}
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn format_test() {
+        let lotto = Lotto::new("1,2,3,4,5,6-7x2");
+        assert_eq!(
+            "01,02,03,04,05,06-07x2",
+            lotto.format(),
+        );
+    }
 }
