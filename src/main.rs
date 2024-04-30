@@ -42,4 +42,9 @@ async fn main() {
         Ok(_) => println!("fetch success"),
         Err(err) => println!("fetch failed: {err}"),
     }
+
+    util::calc_result(
+        &lotto::Lotto::new("01,02,03,04,05,06-07"),
+        &lotto::Lotto::new("01,02,03,04,05,06-07"),
+    );
 }

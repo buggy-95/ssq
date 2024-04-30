@@ -12,3 +12,6 @@ pub use read_file::read_file;
 
 mod get_result;
 pub use get_result::get_result;
+
+mod calc_result;
+pub use calc_result::calc_result;
