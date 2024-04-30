@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use crate::lotto::Lotto;
 
-fn get_matched_nums(source: &[u8], target: &[u8]) -> (Vec<bool>, u8) {
+fn get_matched_nums(source: &[u8], target: &[u8]) -> (u8, Vec<bool>) {
     let mut count: u8 = 0;
     let mut matched_arr: Vec<bool> = vec![];
     let mut num_sets: HashSet<u8> = HashSet::new();
@@ -19,20 +19,25 @@ fn get_matched_nums(source: &[u8], target: &[u8]) -> (Vec<bool>, u8) {
         }
     }
 
-    (matched_arr, count)
+    (count, matched_arr)
 }
 
-pub fn calc_result(source: &Lotto, target: &Lotto) {
-    let mut red_match_result = get_matched_nums(&source.red_arr, &target.red_arr);
-    let blue_match_result = get_matched_nums(&source.blue_arr, &target.blue_arr);
+pub fn calc_result(source: &Lotto, target: &Lotto) -> (u8, Vec<bool>) {
+    let (red_count, mut matched_arr) = get_matched_nums(&source.red_arr, &target.red_arr);
+    let (blue_count, blue_matched_arr) = get_matched_nums(&source.blue_arr, &target.blue_arr);
 
-    let red_match_count = red_match_result.1;
-    let blue_match_count = blue_match_result.1;
-    red_match_result.0.extend(blue_match_result.0);
+    matched_arr.extend(blue_matched_arr);
 
-    println!("red: {red_match_count}");
-    println!("blue: {blue_match_count}");
-    println!("matched: {:?}", red_match_result.0);
+    println!("red: {red_count}");
+    println!("blue: {blue_count}");
+    println!("matched: {:?}", matched_arr);
+
+    let mut level_arr = [0, 0, 0, 0, 5, 4, 2];
+    if blue_count > 0 {
+        level_arr = [6, 6, 6, 5, 4, 3, 1];
+    }
+
+    (level_arr[red_count as usize], matched_arr)
 }
 
 #[cfg(test)]
@@ -42,7 +47,7 @@ mod test {
     #[test]
     fn should_match_success() {
         assert_eq!(
-            (vec![false, false, true], 1),
+            (1, vec![false, false, true]),
             get_matched_nums(
                 &[1, 2, 3],
                 &[4, 3, 5],
@@ -50,7 +55,7 @@ mod test {
         );
 
         assert_eq!(
-            (vec![true, true, true], 3),
+            (3, vec![true, true, true]),
             get_matched_nums(
                 &[1, 2, 3],
                 &[2, 3, 1],
@@ -58,7 +63,7 @@ mod test {
         );
 
         assert_eq!(
-            (vec![false], 0),
+            (0, vec![false]),
             get_matched_nums(
                 &[1],
                 &[2],
@@ -66,11 +71,37 @@ mod test {
         );
 
         assert_eq!(
-            (vec![true], 1),
+            (1, vec![true]),
             get_matched_nums(
                 &[1],
                 &[1],
             ),
         );
+    }
+
+    #[test]
+    fn result_level_test() {
+        let lotto = Lotto::new("01,02,03,04,05,06-07");
+        let case_arr = [
+            ("01,02,03,04,05,06-07", 1),
+            ("01,02,03,04,05,33-07", 3),
+            ("01,02,03,04,32,33-07", 4),
+            ("01,02,03,31,32,33-07", 5),
+            ("01,02,30,31,32,33-07", 6),
+            ("01,29,30,31,32,33-07", 6),
+            ("28,29,30,31,32,33-07", 6),
+            ("01,02,03,04,05,06-16", 2),
+            ("01,02,03,04,05,33-16", 4),
+            ("01,02,03,04,32,33-16", 5),
+            ("01,02,03,31,32,33-16", 0),
+            ("01,02,30,31,32,33-16", 0),
+            ("01,29,30,31,32,33-16", 0),
+            ("28,29,30,31,32,33-16", 0),
+        ];
+        for (case, level) in case_arr {
+            let case_lotto = Lotto::new(case);
+            let (case_level, _) = calc_result(&case_lotto, &lotto);
+            assert_eq!(level, case_level);
+        }
     }
 }
