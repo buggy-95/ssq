@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use reqwest::{ClientBuilder, header, Error as ReqError };
 use serde::{Serialize, Deserialize};
-use serde_json::to_string_pretty;
 
 use crate::lotto::SsqResult;
 
@@ -15,6 +14,9 @@ struct SSqResultResponse {
 static USER_AGENT_STR: &str = "Mozilla/1.0 (Win1.0)";
 
 pub async fn get_result() -> Result<Vec<SsqResult>, ReqError> {
+    let url_home = "https://www.cwl.gov.cn/ygkj/wqkjgg/ssq/";
+    let url_api = "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice";
+
     let mut default_headers = header::HeaderMap::new();
     default_headers.append(
         header::USER_AGENT,
@@ -26,14 +28,11 @@ pub async fn get_result() -> Result<Vec<SsqResult>, ReqError> {
         .default_headers(default_headers)
         .build()?;
 
-    client
-        .get("https://www.cwl.gov.cn/ygkj/wqkjgg/ssq/")
-        .send()
-        .await?;
+    client.get(url_home).send().await?;
 
     let mut params = HashMap::new();
-    params.insert("name", "ssq");
     params.insert("systemType", "PC");
+    params.insert("name", "ssq");
     params.insert("pageNo", "1");
     params.insert("pageSize", "1");
 
@@ -44,16 +43,9 @@ pub async fn get_result() -> Result<Vec<SsqResult>, ReqError> {
     // params.insert("dayEnd", "");
     // params.insert("week", "");
 
-    let response = client
-        .get("https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice")
-        .query(&params)
-        .send()
-        .await?;
-
-    let SSqResultResponse { result } = response.json().await?;
-    let json = to_string_pretty(&result).unwrap();
-
-    println!("json: {json}");
+    let response = client.get(url_api).query(&params).send().await?;
+    let SSqResultResponse { mut result } = response.json().await?;
+    result.reverse();
 
     Ok(result)
 }

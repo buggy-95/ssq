@@ -32,20 +32,19 @@ async fn main() {
     util::divide();
 
     let lottos = util::get_inputs(&args);
-    for lotto in &lottos {
-        println!("lotto: {:?}", lotto);
-    }
+    // for lotto in &lottos {
+    //     println!("{}", lotto.format());
+    // }
 
-    util::divide();
+    // util::divide();
 
-    let lotto_1 = &lottos[0];
-    match util::get_result().await {
-        Err(err) => println!("fetch failed: {err}"),
-        Ok(ssq_result_arr) => {
-            for ssq_result in &ssq_result_arr {
-                let lotto_result = lotto::LottoResult::new(ssq_result);
-                lotto_result.calc(lotto_1);
-            }
-        }
+    let mut total_reward = 0;
+    let ssq_result_arr = util::get_result().await.unwrap();
+    let skip_empty = ssq_result_arr.len() > 1;
+    for ssq_result in &ssq_result_arr {
+        let lotto_result = lotto::LottoResult::new(ssq_result);
+        let reward = lotto_result.print(&lottos, skip_empty);
+        total_reward += reward;
     }
+    println!("总计: {total_reward}元");
 }

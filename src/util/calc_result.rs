@@ -6,17 +6,12 @@ fn get_matched_nums(source: &[u8], target: &[u8]) -> (u8, Vec<bool>) {
     let mut matched_arr: Vec<bool> = vec![];
     let mut num_sets: HashSet<u8> = HashSet::new();
 
-    for num in target {
-        num_sets.insert(*num);
-    }
+    for num in target { num_sets.insert(*num); }
 
     for num in source {
-        if num_sets.contains(num) {
-            matched_arr.push(true);
-            count += 1;
-        } else {
-            matched_arr.push(false);
-        }
+        if num_sets.contains(num) { count += 1 }
+        if num_sets.contains(num) { matched_arr.push(true) }
+        else { matched_arr.push(false) }
     }
 
     (count, matched_arr)
@@ -34,9 +29,7 @@ pub fn calc_result(source: &Lotto, target: &Lotto) -> (u8, [bool; 7]) {
     }
 
     let mut level_arr = [0, 0, 0, 0, 5, 4, 2];
-    if blue_count > 0 {
-        level_arr = [6, 6, 6, 5, 4, 3, 1];
-    }
+    if blue_count > 0 { level_arr = [6, 6, 6, 5, 4, 3, 1] }
 
     (level_arr[red_count as usize], matched_arr)
 }

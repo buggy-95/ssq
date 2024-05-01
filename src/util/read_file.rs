@@ -23,8 +23,8 @@ mod test {
     #[test]
     fn read_test_file() {
         let target_vec = vec![
-            "01,02,03,04,05,06-07x2".to_string(),
-            "10,11,12,13,14,15-16x3".to_string(),
+            "01,02,03,04,05,06-07x2",
+            "10,11,12,13,14,15-16x3",
         ];
         let mut path_buf = PathBuf::new();
         path_buf.push("./test_lottos.txt");

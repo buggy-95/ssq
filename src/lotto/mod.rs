@@ -3,14 +3,12 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::util::{parse_lotto, calc_result};
 
-#[allow(dead_code)]
 #[derive(Serialize, Deserialize, Debug)]
 struct SsqPrizeGrade {
     r#type: u8,
     typemoney: String,
 }
 
-#[allow(dead_code)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SsqResult {
     code: String,
@@ -68,6 +66,7 @@ impl LottoResult {
         let ssq_str = format!("{}-{}", ssq_result.red, ssq_result.blue);
         let result = Lotto::new(&ssq_str);
 
+        pool.insert(0, 0);
         for pair in &ssq_result.prizegrades {
             if pair.r#type == 7 { continue }
             let money = pair.typemoney.parse::<u32>().unwrap();
@@ -80,10 +79,43 @@ impl LottoResult {
     pub fn calc(self: &Self, target: &Lotto) -> (usize, u32, [bool; 7]) {
         let (level, matched) = calc_result(target, &self.result);
         let reward = self.pool.get(&level).unwrap() * target.scale;
-        println!("当前中奖: {level}, {reward}");
-        println!("{:?}", matched);
 
         (level.into(), reward, matched)
+    }
+
+    pub fn print(self: &Self, input_arr: &Vec<Lotto>, skip_empty: bool) -> u32 {
+        let mut reward_count = 0;
+
+        let level_cn = ['无', '一', '二', '三', '四', '五', '六'];
+
+        let mut reward_str_arr: Vec<String> = vec![];
+
+        for (index, lotto) in input_arr.iter().enumerate() {
+            let (level, reward, matched_arr) = self.calc(lotto);
+            let mut print_str = String::new();
+            print_str.push_str(&format!("第{}注: ", index + 1));
+            for (i, matched) in matched_arr.iter().enumerate() {
+                if !matched { print_str.push('⚫') }
+                else if i < 6 { print_str.push('🔴') }
+                else { print_str.push('🔵') }
+            }
+            print_str.push('\t');
+            print_str.push(level_cn[level]);
+            if level > 0 { print_str.push_str("等奖") }
+            print_str.push('\t');
+            print_str.push_str(&format!("{:>width$}", reward, width = 9));
+            print_str.push('元');
+            if level > 0 || !skip_empty { reward_str_arr.push(print_str) }
+            reward_count += reward;
+        }
+
+        if reward_str_arr.len() > 0 || !skip_empty {
+            println!("{} {}\n{}", self.code, self.date, self.result.format());
+        }
+
+        for str in reward_str_arr { println!("{str}") }
+
+        reward_count
     }
 }
 
