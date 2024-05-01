@@ -15,3 +15,6 @@ pub use get_result::get_result;
 
 mod calc_result;
 pub use calc_result::calc_result;
+
+mod parse_num;
+pub use parse_num::parse_num;

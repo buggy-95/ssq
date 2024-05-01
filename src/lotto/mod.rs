@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use crate::util::{parse_lotto, calc_result};
+use crate::util::{calc_result, parse_lotto, parse_num};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct SsqPrizeGrade {
@@ -69,7 +69,7 @@ impl LottoResult {
         pool.insert(0, 0);
         for pair in &ssq_result.prizegrades {
             if pair.r#type == 7 { continue }
-            let money = pair.typemoney.parse::<u32>().unwrap();
+            let money = parse_num(&pair.typemoney);
             pool.insert(pair.r#type, money);
         }
 
