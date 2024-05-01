@@ -16,6 +16,9 @@ pub struct Args {
     #[arg(short, long)]
     code: Option<String>,
 
+    #[arg(short, long)]
+    recent: Option<u32>,
+
     #[arg(long)]
     all: bool,
 

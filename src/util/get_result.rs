@@ -13,7 +13,8 @@ struct SsqResultResponse {
 static USER_AGENT_STR: &str = "Mozilla/1.0 (Win1.0)";
 
 pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
-    let mut code = String::new();
+    let mut page_size = String::from('1');
+    let mut code_index = String::new();
     let url_home = "https://www.cwl.gov.cn/ygkj/wqkjgg/ssq/";
     let url_api = "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice";
 
@@ -34,7 +35,20 @@ pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
     params.insert("systemType", "PC");
     params.insert("name", "ssq");
     params.insert("pageNo", "1");
-    params.insert("pageSize", "1");
+
+    match (&args.code, &args.recent, &args.from, args.all) {
+        (Some(code), _, _, _) => {
+            code_index = code.clone();
+            params.insert("issueStart", code);
+            params.insert("issueEnd", code);
+        }
+        (None, Some(recent), _, _) => {
+            page_size = recent.to_string();
+        }
+        _ => {}
+    }
+
+    params.insert("pageSize", &page_size);
 
     // params.insert("issueCount", "");
     // params.insert("issueStart", "");
@@ -43,19 +57,13 @@ pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
     // params.insert("dayEnd", "");
     // params.insert("week", "");
 
-    if args.code.is_some() {
-        code = args.code.as_ref().unwrap().clone();
-        params.insert("issueStart", &code);
-        params.insert("issueEnd", &code);
-    }
-
     let response = client.get(url_api).query(&params).send().await?;
     let SsqResultResponse { mut result } = response.json().await?;
     result.reverse();
 
     if result.len() < 1 {
         if args.code.is_some() {
-            println!("未查询到指定期号: {}", &code);
+            println!("未查询到指定期号: {}", &code_index);
         }
     }
 
