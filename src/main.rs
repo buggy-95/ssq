@@ -32,19 +32,20 @@ async fn main() {
     util::divide();
 
     let lottos = util::get_inputs(&args);
-    for lotto in lottos {
+    for lotto in &lottos {
         println!("lotto: {:?}", lotto);
     }
 
     util::divide();
 
+    let lotto_1 = &lottos[0];
     match util::get_result().await {
-        Ok(_) => println!("fetch success"),
         Err(err) => println!("fetch failed: {err}"),
+        Ok(ssq_result_arr) => {
+            for ssq_result in &ssq_result_arr {
+                let lotto_result = lotto::LottoResult::new(ssq_result);
+                lotto_result.calc(lotto_1);
+            }
+        }
     }
-
-    util::calc_result(
-        &lotto::Lotto::new("01,02,03,04,05,06-07"),
-        &lotto::Lotto::new("01,02,03,04,05,06-07"),
-    );
 }

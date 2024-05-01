@@ -4,22 +4,7 @@ use reqwest::{ClientBuilder, header, Error as ReqError };
 use serde::{Serialize, Deserialize};
 use serde_json::to_string_pretty;
 
-#[allow(dead_code)]
-#[derive(Serialize, Deserialize, Debug)]
-struct SsqPrizeGrade {
-    r#type: usize,
-    typemoney: String,
-}
-
-#[allow(dead_code)]
-#[derive(Serialize, Deserialize, Debug)]
-struct SsqResult {
-    code: String,
-    date: String,
-    red: String,
-    blue: String,
-    prizegrades: [SsqPrizeGrade; 7],
-}
+use crate::lotto::SsqResult;
 
 #[allow(dead_code)]
 #[derive(Serialize, Deserialize, Debug)]
@@ -29,7 +14,7 @@ struct SSqResultResponse {
 
 static USER_AGENT_STR: &str = "Mozilla/1.0 (Win1.0)";
 
-pub async fn get_result() -> Result<(), ReqError> {
+pub async fn get_result() -> Result<Vec<SsqResult>, ReqError> {
     let mut default_headers = header::HeaderMap::new();
     default_headers.append(
         header::USER_AGENT,
@@ -70,5 +55,5 @@ pub async fn get_result() -> Result<(), ReqError> {
 
     println!("json: {json}");
 
-    Ok(())
+    Ok(result)
 }

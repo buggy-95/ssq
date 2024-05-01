@@ -22,15 +22,16 @@ fn get_matched_nums(source: &[u8], target: &[u8]) -> (u8, Vec<bool>) {
     (count, matched_arr)
 }
 
-pub fn calc_result(source: &Lotto, target: &Lotto) -> (u8, Vec<bool>) {
-    let (red_count, mut matched_arr) = get_matched_nums(&source.red_arr, &target.red_arr);
+pub fn calc_result(source: &Lotto, target: &Lotto) -> (u8, [bool; 7]) {
+    let mut matched_arr = [false; 7];
+
+    let (red_count, red_matched_arr) = get_matched_nums(&source.red_arr, &target.red_arr);
     let (blue_count, blue_matched_arr) = get_matched_nums(&source.blue_arr, &target.blue_arr);
 
-    matched_arr.extend(blue_matched_arr);
-
-    println!("red: {red_count}");
-    println!("blue: {blue_count}");
-    println!("matched: {:?}", matched_arr);
+    matched_arr[6] = blue_matched_arr[0];
+    for (index, &matched) in red_matched_arr.iter().enumerate() {
+        matched_arr[index] = matched;
+    }
 
     let mut level_arr = [0, 0, 0, 0, 5, 4, 2];
     if blue_count > 0 {
