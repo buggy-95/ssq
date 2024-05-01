@@ -1,6 +1,6 @@
-use serde_json::to_string_pretty;
-use serde::Serialize;
 use clap::Parser;
+use serde::Serialize;
+use serde_json::to_string_pretty;
 
 mod lotto;
 mod util;
@@ -39,12 +39,14 @@ async fn main() {
     // util::divide();
 
     let mut total_reward = 0;
-    let ssq_result_arr = util::get_result().await.unwrap();
+    let ssq_result_arr = util::get_result(&args).await.unwrap();
     let skip_empty = ssq_result_arr.len() > 1;
     for ssq_result in &ssq_result_arr {
         let lotto_result = lotto::LottoResult::new(ssq_result);
         let reward = lotto_result.print(&lottos, skip_empty);
         total_reward += reward;
     }
-    println!("总计: {total_reward}元");
+    if ssq_result_arr.len() > 0 {
+        println!("总计: {total_reward}元");
+    }
 }

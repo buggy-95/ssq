@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 
-use reqwest::{ClientBuilder, header, Error as ReqError };
-use serde::{Serialize, Deserialize};
+use reqwest::{header, ClientBuilder, Error as ReqError};
+use serde::{Deserialize, Serialize};
 
-use crate::lotto::SsqResult;
+use crate::{lotto::SsqResult, Args};
 
-#[allow(dead_code)]
 #[derive(Serialize, Deserialize, Debug)]
-struct SSqResultResponse {
+struct SsqResultResponse {
     result: Vec<SsqResult>,
 }
 
 static USER_AGENT_STR: &str = "Mozilla/1.0 (Win1.0)";
 
-pub async fn get_result() -> Result<Vec<SsqResult>, ReqError> {
+pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
+    let mut code = String::new();
     let url_home = "https://www.cwl.gov.cn/ygkj/wqkjgg/ssq/";
     let url_api = "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice";
 
@@ -43,9 +43,21 @@ pub async fn get_result() -> Result<Vec<SsqResult>, ReqError> {
     // params.insert("dayEnd", "");
     // params.insert("week", "");
 
+    if args.code.is_some() {
+        code = args.code.as_ref().unwrap().clone();
+        params.insert("issueStart", &code);
+        params.insert("issueEnd", &code);
+    }
+
     let response = client.get(url_api).query(&params).send().await?;
-    let SSqResultResponse { mut result } = response.json().await?;
+    let SsqResultResponse { mut result } = response.json().await?;
     result.reverse();
+
+    if result.len() < 1 {
+        if args.code.is_some() {
+            println!("未查询到指定期号: {}", &code);
+        }
+    }
 
     Ok(result)
 }

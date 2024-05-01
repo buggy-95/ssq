@@ -31,7 +31,6 @@ impl Lotto {
         Lotto { red_arr, blue_arr, scale }
     }
 
-    #[allow(dead_code)]
     pub fn format(self: &Self) -> String {
         let num_to_str = |num: u8| format!("{:02}", num);
         let mut formated = self.red_arr.map(num_to_str).join(",");
@@ -50,7 +49,6 @@ impl Lotto {
     }
 }
 
-#[allow(dead_code)]
 pub struct LottoResult {
     result: Lotto,
     code: String,
