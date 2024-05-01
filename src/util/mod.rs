@@ -5,6 +5,7 @@ mod get_inputs;
 pub use get_inputs::get_inputs;
 
 mod divide;
+#[allow(unused_imports)]
 pub use divide::divide;
 
 mod read_file;

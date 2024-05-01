@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use reqwest::{header, ClientBuilder, Error as ReqError};
 use serde::{Deserialize, Serialize};
+use regex::Regex;
 
 use crate::{lotto::SsqResult, Args};
 
@@ -13,10 +14,10 @@ struct SsqResultResponse {
 static USER_AGENT_STR: &str = "Mozilla/1.0 (Win1.0)";
 
 pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
-    let mut page_size = String::from('1');
-    let mut code_index = String::new();
     let url_home = "https://www.cwl.gov.cn/ygkj/wqkjgg/ssq/";
     let url_api = "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice";
+    let mut page_size = String::from('1');
+    let mut code_index = String::new();
 
     let mut default_headers = header::HeaderMap::new();
     default_headers.append(
@@ -36,7 +37,7 @@ pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
     params.insert("name", "ssq");
     params.insert("pageNo", "1");
 
-    match (&args.code, &args.recent, &args.from, args.all) {
+    match (&args.code, &args.recent, &args.from, &args.all) {
         (Some(code), _, _, _) => {
             code_index = code.clone();
             params.insert("issueStart", code);
@@ -45,17 +46,25 @@ pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
         (None, Some(recent), _, _) => {
             page_size = recent.to_string();
         }
+        (None, None, Some(from), _) => {
+            let code_index_reg = Regex::new(r"^20\d{5}$").unwrap();
+            let date_reg = Regex::new(r"^\d{4}-\d{2}-\d{2}$").unwrap();
+            
+            if code_index_reg.is_match(from) {
+                params.insert("issueStart", from);
+            } else if date_reg.is_match(from) {
+                params.insert("dayStart", from);
+            }
+            page_size = "9999".to_string();
+        }
+        (None, None, None, true) => {
+            params.insert("dayStart", "2000-01-01");
+            page_size = "9999".to_string();
+        }
         _ => {}
     }
 
     params.insert("pageSize", &page_size);
-
-    // params.insert("issueCount", "");
-    // params.insert("issueStart", "");
-    // params.insert("issueEnd", "");
-    // params.insert("dayStart", "");
-    // params.insert("dayEnd", "");
-    // params.insert("week", "");
 
     let response = client.get(url_api).query(&params).send().await?;
     let SsqResultResponse { mut result } = response.json().await?;

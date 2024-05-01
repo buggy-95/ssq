@@ -1,6 +1,6 @@
 use clap::Parser;
 use serde::Serialize;
-use serde_json::to_string_pretty;
+// use serde_json::to_string_pretty;
 
 mod lotto;
 mod util;
@@ -29,10 +29,10 @@ pub struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
-    let args_json = to_string_pretty(&args).unwrap();
-    println!("args: {}", args_json);
+    // let args_json = to_string_pretty(&args).unwrap();
+    // println!("args: {}", args_json);
 
-    util::divide();
+    // util::divide();
 
     let lottos = util::get_inputs(&args);
     // for lotto in &lottos {
