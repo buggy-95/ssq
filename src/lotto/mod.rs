@@ -11,8 +11,8 @@ struct SsqPrizeGrade {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SsqResult {
-    code: String,
-    date: String,
+    pub code: String,
+    pub date: String,
     red: String,
     blue: String,
     prizegrades: [SsqPrizeGrade; 7],
