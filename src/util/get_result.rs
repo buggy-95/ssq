@@ -1,5 +1,7 @@
+use std::env;
 use std::error::Error;
 use std::fs;
+use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use regex::Regex;
@@ -15,6 +17,13 @@ struct SsqResultResponse {
 }
 
 static CACHE_FILE_NAME: &str = "cache_ssq.json";
+
+fn get_cache_file_path() -> PathBuf {
+    let mut cache_file_path = env::current_exe().unwrap();
+    cache_file_path.pop();
+    cache_file_path.push(CACHE_FILE_NAME);
+    cache_file_path
+}
 
 async fn fetch_result() -> Result<Vec<SsqResult>, ReqError> {
     let url_home = "https://www.cwl.gov.cn/ygkj/wqkjgg/ssq/";
@@ -62,7 +71,7 @@ async fn fetch_result() -> Result<Vec<SsqResult>, ReqError> {
 async fn update_cache() -> Vec<SsqResult> {
     let new_cache_data = fetch_result().await.unwrap();
     let json = serde_json::to_string(&new_cache_data).unwrap();
-    match std::fs::write(CACHE_FILE_NAME, json) {
+    match std::fs::write(get_cache_file_path(), json) {
         Err(err) => println!("缓存写入失败: {err}"),
         _ => {}
     }
@@ -70,7 +79,7 @@ async fn update_cache() -> Vec<SsqResult> {
 }
 
 async fn get_cache() -> Result<Vec<SsqResult>, Box<dyn Error>> {
-    let file = fs::File::open(CACHE_FILE_NAME)?;
+    let file = fs::File::open(get_cache_file_path())?;
     let result: Vec<SsqResult> = serde_json::from_reader(file)?;
     let last_cache_data = &result[&result.len() - 1];
     match util::is_outdated(&last_cache_data.date) {
