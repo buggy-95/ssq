@@ -81,12 +81,10 @@ impl LottoResult {
         (level.into(), reward, matched)
     }
 
-    pub fn print(self: &Self, input_arr: &Vec<Lotto>, skip_empty: bool) -> u32 {
-        let mut reward_count = 0;
-
+    pub fn format(self: &Self, input_arr: &Vec<Lotto>, skip_empty: bool) -> (Vec<String>, u32) {
         let level_cn = ['无', '一', '二', '三', '四', '五', '六'];
-
         let mut reward_str_arr: Vec<String> = vec![];
+        let mut reward_count = 0;
 
         for (index, lotto) in input_arr.iter().enumerate() {
             let (level, reward, matched_arr) = self.calc(lotto);
@@ -108,12 +106,11 @@ impl LottoResult {
         }
 
         if reward_str_arr.len() > 0 || !skip_empty {
-            println!("{} {}\n{}", self.code, self.date, self.result.format());
+            let formated_str = format!("{} {}\n{}", self.code, self.date, self.result.format());
+            reward_str_arr.insert(0, formated_str);
         }
 
-        for str in reward_str_arr { println!("{str}") }
-
-        reward_count
+        (reward_str_arr, reward_count)
     }
 }
 

@@ -1,8 +1,7 @@
 use chrono::{DateTime, Datelike, Duration, Local, NaiveTime, Weekday};
 
 pub fn is_outdated(date_str: &str) -> bool {
-    let now = Local::now();
-    return check_outdated(date_str, now);
+    check_outdated(date_str, Local::now())
 }
 
 fn check_outdated(date_str: &str, now: DateTime<Local>) -> bool {
@@ -28,7 +27,7 @@ fn check_outdated(date_str: &str, now: DateTime<Local>) -> bool {
         _ => {}
     }
 
-    return target_date.to_string() != date_str;
+    target_date.to_string() != date_str
 }
 
 #[cfg(test)]

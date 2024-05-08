@@ -2,7 +2,7 @@ use std::env;
 use std::error::Error;
 use std::fs;
 use std::path::PathBuf;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH, Instant};
 
 use regex::Regex;
 use reqwest::{header, ClientBuilder, Error as ReqError};
@@ -25,7 +25,8 @@ fn get_cache_file_path() -> PathBuf {
     cache_file_path
 }
 
-async fn fetch_result() -> Result<Vec<SsqResult>, ReqError> {
+async fn fetch_result(verbose: bool) -> Result<Vec<SsqResult>, ReqError> {
+    let time_1: Instant = Instant::now();
     let url_home = "https://www.cwl.gov.cn/ygkj/wqkjgg/ssq/";
     let url_api = "https://www.cwl.gov.cn/cwl_admin/front/cwlkj/search/kjxx/findDrawNotice";
     let now = SystemTime::now();
@@ -45,6 +46,7 @@ async fn fetch_result() -> Result<Vec<SsqResult>, ReqError> {
         .cookie_store(true)
         .default_headers(default_headers)
         .build()?;
+    if verbose { println!("[time] (fetch_result)\t\tprepare fetch client:\t{:?}", time_1.elapsed()) }
 
     let api_params = [
         ("systemType", "PC"),
@@ -54,45 +56,69 @@ async fn fetch_result() -> Result<Vec<SsqResult>, ReqError> {
         ("dayStart", "2000-01-01"),
     ];
 
+    let time_2 = Instant::now();
     match client.get(url_home).send().await {
         Err(err) => panic!("Token 获取失败: {err}"),
         _ => {}
     }
+    if verbose { println!("[time] (fetch_result)\t\tget token:\t{:?}", time_2.elapsed()) }
 
-    match client.get(url_api).query(&api_params).send().await {
+    let time_3 = Instant::now();
+    let result = match client.get(url_api).query(&api_params).send().await {
         Err(err) => panic!("历史数据查询失败: {err}"),
         Ok(response) => {
             let SsqResultResponse { result } = response.json().await?;
             Ok(result)
         }
-    }
+    };
+    if verbose { println!("[time] (fetch_result)\t\tfetch history data:\t{:?}", time_3.elapsed()) }
+
+    result
 }
 
-async fn update_cache() -> Vec<SsqResult> {
-    let new_cache_data = fetch_result().await.unwrap();
+async fn update_cache(verbose: bool) -> Vec<SsqResult> {
+    let time_1 = Instant::now();
+    let new_cache_data = fetch_result(verbose).await.unwrap();
+    if verbose { println!("[time] (update_cache)\t\tfetch full result:\t{:?}", time_1.elapsed()) }
+
+    let time_2 = Instant::now();
     let json = serde_json::to_string(&new_cache_data).unwrap();
+    if verbose { println!("[time] (update_cache)\t\tserialize json:\t{:?}", time_2.elapsed()) }
+
+    let time_3 = Instant::now();
     match std::fs::write(get_cache_file_path(), json) {
         Err(err) => println!("缓存写入失败: {err}"),
         _ => {}
     }
+    if verbose { println!("[time] (update_cache)\t\twrite json:\t{:?}", time_3.elapsed()) }
+
     new_cache_data
 }
 
-async fn get_cache() -> Result<Vec<SsqResult>, Box<dyn Error>> {
+fn get_cache(verbose: bool) -> Result<Vec<SsqResult>, Box<dyn Error>> {
+    let time_1 = Instant::now();
     let file = fs::File::open(get_cache_file_path())?;
     let result: Vec<SsqResult> = serde_json::from_reader(file)?;
+    if verbose { println!("[time] (get_cache)\tread cache:\t\t{:?}", time_1.elapsed()) }
     let last_cache_data = &result[0];
-    match util::is_outdated(&last_cache_data.date) {
-        true => return Err("缓存过期")?,
+
+    let time_2 = Instant::now();
+    let result = match util::is_outdated(&last_cache_data.date) {
+        true => Err("缓存过期")?,
         false => Ok(result),
-    }
+    };
+    if verbose { println!("[time] (get_cache)\tjudge cache is fresh:\t{:?}", time_2.elapsed()) }
+
+    result
 }
 
 pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
-    let mut result = match get_cache().await {
+    let time_1 = Instant::now();
+    let mut result = match get_cache(args.verbose) {
         Ok(result) => result,
-        Err(_) => update_cache().await,
+        Err(_) => update_cache(args.verbose).await,
     };
+    if args.verbose { println!("[time] (get_result)\tget full result:\t{:?}", time_1.elapsed()) }
 
     if args.code.is_some() {
         let code = args.code.as_ref().unwrap();
@@ -109,10 +135,13 @@ pub async fn get_result(args: &Args) -> Result<Vec<SsqResult>, ReqError> {
         let code_index_reg = Regex::new(r"^20\d{5}$").unwrap();
         let date_reg = Regex::new(r"^\d{4}-\d{2}-\d{2}$").unwrap();
 
+        let time_2 = Instant::now();
         if code_index_reg.is_match(&from) {
+            if args.verbose { println!("[time] (get_result)\t\tregex code:\t{:?}", time_2.elapsed()) }
             let filter = |ssq: &SsqResult| &ssq.code >= from;
             result = result.into_iter().filter(filter).collect();
         } else if date_reg.is_match(&from) {
+            if args.verbose { println!("[time] (get_result)\t\tregex date:\t{:?}", time_2.elapsed()) }
             let filter = |ssq: &SsqResult| &ssq.date >= from;
             result = result.into_iter().filter(filter).collect();
         } else {
