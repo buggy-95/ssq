@@ -81,7 +81,7 @@ async fn update_cache() -> Vec<SsqResult> {
 async fn get_cache() -> Result<Vec<SsqResult>, Box<dyn Error>> {
     let file = fs::File::open(get_cache_file_path())?;
     let result: Vec<SsqResult> = serde_json::from_reader(file)?;
-    let last_cache_data = &result[&result.len() - 1];
+    let last_cache_data = &result[0];
     match util::is_outdated(&last_cache_data.date) {
         true => return Err("缓存过期")?,
         false => Ok(result),
